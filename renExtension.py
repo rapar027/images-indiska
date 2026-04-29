@@ -1,10 +1,10 @@
 import os
 
 # Path to the folder with your files
-folder_path = '/Users/ravi.parekh/Documents/personal/images-indiska/images'
+folder_path = '/Users/ravi.parekh/Documents/personal/images-indiska/images/png'
 
 # New extension you want to apply (e.g., '.jpg', '.png')
-new_extension = '.jpg'  # Change to the desired extension
+new_extension = '.png'  # Change to the desired extension
 
 # Loop through each file in the folder
 for filename in os.listdir(folder_path):
