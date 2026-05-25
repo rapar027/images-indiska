@@ -221,13 +221,17 @@ def process_images(cfg: dict) -> list[dict]:
             "orig_dim": orig_dim,
         }
 
-        variant_info = {}   # size_px → (dim_str, bytes_int or None)
+        variant_info = {}   # size_px → (dim_str, bytes_int or None, status)
 
         for target_px in sizes:
+            # Output filename: originalname-300.webp
+            dest = dest_dir / f"{stem}-{target_px}.webp"
+
             # Check if image is already smaller — skip if so
             ref = orig_w if axis == "width" else orig_h
             if ref <= target_px:
                 variant_info[target_px] = (orig_dim, None, "skipped (already smaller)")
+                print(f"  ⏭ {dest.name}  already ≤ {target_px}px — skipped")
                 continue
 
             # Resize
@@ -237,30 +241,26 @@ def process_images(cfg: dict) -> list[dict]:
                 resized = resize_to_height(work, target_px)
 
             rdim = f"{resized.width}×{resized.height}"
-            dest = dest_dir / f"{stem}_{target_px}w.webp"
 
             if dry_run:
                 variant_info[target_px] = (rdim, None, "dry-run")
+                print(f"  [DRY] {dest.name}  {rdim}")
             else:
                 if target_px == desktop_px:
                     size_b = save_webp_under_limit(resized, dest, limit)
                 else:
                     size_b = save_webp(resized, dest)
                 variant_info[target_px] = (rdim, size_b, "ok")
+                print(f"  ✓ {dest.name}  {rdim}  {human_size(size_b)}")
 
-            print(f"  {'[DRY]' if dry_run else '✓'} {dest.name}  "
-                  f"{rdim}  "
-                  f"{human_size(variant_info[target_px][1]) if variant_info[target_px][1] else ''}")
-
-        # Also keep original-size WebP (*)
+        # Original-size WebP: originalname.webp (no dimension suffix)
         orig_dest = dest_dir / f"{stem}.webp"
         if dry_run:
             orig_size_b = None
+            print(f"  [DRY] {orig_dest.name}  {orig_dim}")
         else:
             orig_size_b = save_webp(work, orig_dest)
-        print(f"  {'[DRY]' if dry_run else '✓'} {orig_dest.name}  "
-              f"{orig_dim}  "
-              f"{human_size(orig_size_b) if orig_size_b else ''}")
+            print(f"  ✓ {orig_dest.name}  {orig_dim}  {human_size(orig_size_b)}")
 
         row["variant_info"] = variant_info
         row["orig_size_b"]  = img_path.stat().st_size
@@ -288,7 +288,7 @@ def print_summary(rows: list[dict], cfg: dict):
         "Image", "Orig Dim",
         f"Mobile Dim ({mobile_px}px)", "Mobile Size",
         f"Desktop Dim ({desktop_px}px)", "Desktop Size",
-        "Original WebP Size",
+        "Original WebP Dim", "Original WebP Size",
     ]
 
     def row_fmt(cells):
@@ -297,28 +297,46 @@ def print_summary(rows: list[dict], cfg: dict):
     print(row_fmt(headers))
     print("─" * 100)
 
+    total_mob  = 0
+    total_dsk  = 0
+    total_orig = 0
+
     for row in rows:
         vi = row["variant_info"]
 
         mob = vi.get(mobile_px)
         mob_dim  = mob[0] if mob else "—"
         mob_size = human_size(mob[1]) if mob and mob[1] else (mob[2] if mob else "—")
+        if mob and mob[1]:
+            total_mob += mob[1]
 
         dsk = vi.get(desktop_px)
         dsk_dim  = dsk[0] if dsk else "—"
         dsk_size = human_size(dsk[1]) if dsk and dsk[1] else (dsk[2] if dsk else "—")
+        if dsk and dsk[1]:
+            total_dsk += dsk[1]
 
         orig_dim, orig_size_b = row["orig_dest"]
         orig_wsize = human_size(orig_size_b) if orig_size_b else "dry-run"
+        if orig_size_b:
+            total_orig += orig_size_b
 
         print(row_fmt([
             row["name"][:29],
             row["orig_dim"],
             mob_dim, mob_size,
             dsk_dim, dsk_size,
-            orig_wsize,
+            orig_dim, orig_wsize,
         ]))
 
+    print("─" * 100)
+    print(row_fmt([
+        f"TOTAL ({len(rows)} images)",
+        "",
+        "", human_size(total_mob),
+        "", human_size(total_dsk),
+        "", human_size(total_orig),
+    ]))
     print("═" * 100)
     print(f"\nDone. {len(rows)} image(s) processed.")
 
