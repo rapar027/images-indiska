@@ -89,7 +89,8 @@ async function main() {
         // ── Rename locally ───────────────────────────────────────────────────────
         try {
             fs.renameSync(oldPath, newPath);
-            console.log(`📁  [${image}] -> [${id}] ${oldFilename}`);
+            console.log(`📁   [${image}] ->`);
+            console.log(`📁   [${id}] ${oldFilename}`);
             console.log(`        →  ${newFilename}`);
         } catch (fsErr) {
             console.error(`❌  [${id}] Rename failed: ${fsErr.message}`);
@@ -99,10 +100,10 @@ async function main() {
 
         // ── Update DB ────────────────────────────────────────────────────────────
         try {
-/*            await client.query(
+            await client.query(
                 "UPDATE products SET image_backup = $1 WHERE id = $2",
                 [newImageUrl, id]
-            );*/
+            );
             console.log(`🗄️   [${id}] DB → ${newImageUrl}\n`);
             renamed++;
         } catch (dbErr) {
