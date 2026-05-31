@@ -25,7 +25,7 @@ OVERWRITE_OUTPUT      = False       # True = re-compress files that already exis
 COMPRESS_ENABLED      = True        # True = apply quality + resize to every passing image
 QUALITY               = 78          # JPEG / WebP quality 1–95  (lower = smaller file)
 PNG_COMPRESS_LEVEL    = 9           # PNG compression 0–9
-TARGET_MAX_WIDTH      = 1920        # resize image down if wider  than this (px)
+TARGET_MAX_WIDTH      = 720        # resize image down if wider  than this (px)
 TARGET_MAX_HEIGHT     = 1080        # resize image down if taller than this (px)
 
 # ── Filter 2 · Width guard ────────────────────────────────────────────────────
