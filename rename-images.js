@@ -7,7 +7,21 @@
  * Usage:
  *   npm install pg
  *   node rename-images.js
+ *
  */
+
+
+/*for f in *_11zon.webp; do
+    [ -f "$f" ] || continue
+new=$(printf '%s\n' "$f" | sed -E 's/_[0-9]+_11zon\.webp$/.webp/')
+if [ -e "$new" ]; then
+echo "SKIPPED: $new already exists"
+else
+mv "$f" "$new"
+echo "RENAMED: $f -> $new"
+fi
+done*/
+
 
 require("dotenv").config();
 
